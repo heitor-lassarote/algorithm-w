@@ -1,12 +1,14 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
 name:           algorithm-w
 version:        0.1.0.0
+synopsis:       An implementation of the Algorithm W for type inference from the [Algorithm W Step by Step](https://github.com/mgrabmueller/AlgorithmW/blob/master/pdf/AlgorithmW.pdf) paper.
 description:    Please see the README on GitHub at <https://github.com/heitor-lassarote/algorithm-w#readme>
+category:       Language
 homepage:       https://github.com/heitor-lassarote/algorithm-w#readme
 bug-reports:    https://github.com/heitor-lassarote/algorithm-w/issues
 author:         Heitor Toledo Lassarote de Paula

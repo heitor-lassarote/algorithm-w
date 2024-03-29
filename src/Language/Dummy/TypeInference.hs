@@ -147,10 +147,18 @@ tiLit _ (LInt _) = pure (nullSubst, TInt)
 tiLit _ (LBool _) = pure (nullSubst, TBool)
 
 ti :: TypeEnv -> Exp -> TI (Subst, Type)
+-- x : σ ∈ Γ   τ = inst(σ)
+-- -----------------------
+--     Γ ⊢ x : τ, ∅
 ti (TypeEnv env) (EVar n) = case Map.lookup n env of
   Nothing    -> throwError $ UnboundVariable n
   Just sigma -> (nullSubst, ) <$> instantiate sigma
+-- ----------------   ---------------   -----------------------------
+-- Γ ⊢ false : Bool   Γ ⊢ true : Bool   Γ ⊢ ...,-2,-1,0,1,2,... : Int
 ti env (ELit l) = tiLit env l
+-- τ = newvar    Γ, x : τ ⊢ e : τ', S
+-- ----------------------------------
+--      Γ ⊢ λx. e : Sτ → τ', S
 ti env (EAbs n e) = do
   tv <- newTyVar "a"
   let
@@ -158,12 +166,18 @@ ti env (EAbs n e) = do
     env'' = TypeEnv (env' `Map.union` Map.singleton n (Scheme [] tv))
   (s1, t1) <- ti env'' e
   pure (s1, TFun (apply s1 tv) t1)
+-- Γ ⊢ e₀ ∶ τ₀, S₀   S₀Γ ⊢ e₁ ∶ τ₁, S₁   τ' = newvar   S₂ = mgu(S₁τ₀, τ₁ → τ')
+-- ---------------------------------------------------------------------------
+--                        Γ ⊢ e₀ e₁ ∶ S₂τ', S₂S₁S₀
 ti env (EApp e1 e2) = do
   tv <- newTyVar "a"
   (s1, t1) <- ti env e1
   (s2, t2) <- ti (apply s1 env) e2
   s3 <- unify (apply s2 t1) (TFun t2 tv)
   pure (s3 `composeSubst` s2 `composeSubst` s1, apply s3 tv)
+-- Γ ⊢ e₀ : τ,S₀   S₀Γ, x : generalize(S₀Γ)(τ) ⊢ e₁ : τ', S₁
+-- ---------------------------------------------------------
+--              Γ ⊢ let x = e₀ in e₁ : τ', S₁S₀
 ti env (ELet x e1 e2) = do
   (s1, t1) <- ti env e1
   let
