@@ -25,7 +25,10 @@ dependencies:
 
 default-extensions:
 - DerivingStrategies
+- FlexibleInstances
 - ImportQualifiedPost
+- LambdaCase
+- MultiParamTypeClasses
 - OverloadedRecordDot
 - OverloadedStrings
 - TupleSections
@@ -38,7 +41,11 @@ ghc-options:
 - -Wno-missing-import-lists
 - -Wno-missing-safe-haskell-mode
 - -Wno-missing-kind-signatures
+- -Wno-missing-role-annotations
 - -Wno-safe
+- -Wno-unsafe
+
+language: GHC2021
 
 library:
   source-dirs: src

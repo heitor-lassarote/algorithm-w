@@ -1,4 +1,4 @@
-module Language.Dummy.TypeInference
+module Language.Dummy.AlgorithmW
   ( TI, runTI
   , TIError (..), prError
   , TIState (..)
@@ -14,10 +14,9 @@ import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Prettyprinter (Doc, (<+>))
-import Prettyprinter qualified as PP
 
-import Language.Dummy.AST (Exp (..), Lit (..), Scheme (..), Type (..), prType)
+import Language.Dummy.AST (Exp (..), Lit (..), Scheme (..), Type (..))
+import Language.Dummy.Error (TIError (..), prError)
 
 type Subst = Map Text Type
 
@@ -69,20 +68,6 @@ generalize env t = Scheme vars t
   where
     vars :: [Text]
     vars = Set.toList $ ftv t Set.\\ ftv env
-
-data TIError
-  = TypesDoNotUnify Type Type
-  | OccursCheckFail Text Type
-  | UnboundVariable Text
-  deriving stock (Eq, Show)
-
-prError :: TIError -> Doc TIError
-prError (TypesDoNotUnify t1 t2) =
-  "Types do not unify:" <+> PP.unAnnotate (prType t1) <+> "vs." <+> PP.unAnnotate (prType t2)
-prError (OccursCheckFail u t) =
-  "Occurs check fails:" <+> PP.pretty u <+> "vs." <+> PP.unAnnotate (prType t)
-prError (UnboundVariable n) =
-  "Unbound variable:" <+> PP.pretty n
 
 newtype TIState = TIState
   { supply :: Int
@@ -187,5 +172,5 @@ ti env (ELet x e1 e2) = do
   (s2, t2) <- ti (apply s1 env'') e2
   pure (s1 `composeSubst` s2, t2)
 
-typeInference :: Map Text Scheme -> Exp -> TI Type
-typeInference env e = uncurry apply <$> ti (TypeEnv env) e
+typeInference :: Exp -> TI Type
+typeInference e = uncurry apply <$> ti (TypeEnv mempty) e
